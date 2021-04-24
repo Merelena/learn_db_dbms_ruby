@@ -1,0 +1,91 @@
+require 'open-uri'
+
+class EduAidsController < ApplicationController
+  before_action :set_edu_aid, only: [:show, :update, :destroy]
+  before_action :authenticate_user_from_token!, except: [:index, :show]
+  before_action :deserve?, except: [:index, :show]
+
+  # GET /edu_aids
+  def index
+    @edu_aids = EduAid.all
+    @edu_aids = @edu_aids.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
+    @edu_aids = @edu_aids.order("#{params[:field]} #{params[:sort]}") if params[:sort]    
+    render json: @edu_aids
+  end
+
+  # GET /edu_aids/1
+  def show
+    render json: @edu_aid
+  end
+
+  # POST /edu_aids
+  def create    
+    unless edu_aid_params[:document]
+      render json: {
+        extention: "Document file is mandatory"
+        }, status: :unprocessable_entity
+      return
+    end
+    @edu_aid = EduAid.new(edu_aid_params)
+
+    if @edu_aid.save
+      render json: @edu_aid, status: :created, location: @edu_aid
+    else
+      render json: @edu_aid.errors, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH/PUT /edu_aids/1
+  def update
+    if @edu_aid.update(edu_aid_params)
+      render json: @edu_aid
+    else
+      render json: @edu_aid.errors, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /edu_aids/1
+  def destroy
+    @edu_aid.destroy
+    render json: {
+      message: "Edu aid deleted" },
+      status: 200
+  end
+
+  private
+    # Use callbacks to share common setup or constraints between actions.
+    def set_edu_aid
+      begin
+        @edu_aid = EduAid.find(params[:id])
+      rescue
+        render json: {
+          exception: "No edu aid" },
+          status: 200 unless @edu_aid
+      end
+    end
+
+    # Only allow a list of trusted parameters through.
+    def edu_aid_params
+      params[:user_id] = current_user.id
+      result = params.permit(
+        :name,
+        :authors,
+        :image,
+        :document,
+        :number_of_pages,
+        :description,
+        :publisher,
+        :publish_year,
+        :user_id
+      )
+      result
+    end
+
+    def deserve?
+      if !['lector', 'admin', 'superadmin'].include?(current_user.role) 
+        render status: 403
+      else
+        true        
+      end
+    end
+end

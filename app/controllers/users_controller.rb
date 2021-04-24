@@ -1,7 +1,9 @@
 class UsersController < ApplicationController
   before_action :authenticate_user_from_token!, :except => [:login, :create]
-  before_action :isAdmin?, :except => [:login, :logout, :show]
+  before_action :deserve?, :except => [:login, :logout, :show]
 
+
+  # POST /users
   def create
     user_params = params.require('user').permit(
       :first_name,
@@ -32,6 +34,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # POST /users/:id
   def update
     user_params = params.require('user').permit(
       :id,
@@ -60,6 +63,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # GET /users/delete/:id
   def delete
     user = User.find(params[:id])
     # Only superadmin can delete users from all edu instituts
@@ -74,13 +78,17 @@ class UsersController < ApplicationController
     end
   end
 
+  # GET /users
   def index
     users = current_user.role == 'superadmin' ? User.all : User.where("edu_institution_id = '#{current_user[:edu_institution_id]}'")
+    users = users.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
+    users = users.order("#{params[:field]} #{params[:sort]}") if params[:sort]
     render json: {
       users: users },
       status: 200
   end
 
+  # GET /users/:id
   def show
     user = User.find(params[:id])
     if user.edu_institution_id == current_user.edu_institution_id || current_user.role == 'superadmin'
@@ -92,6 +100,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # POST /users/login
   def login
     user = User.where("email = '#{params[:email]}'").first
     if user&.valid_password?(params[:password])
@@ -105,6 +114,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # GET /users/logout
   def logout
     User.update(current_user.id, authentication_token: nil)
     render json: {
@@ -113,11 +123,11 @@ class UsersController < ApplicationController
   end
 
   private
-  def isAdmin?
-    if !['admin', 'superadmin'].include?(current_user.role) 
-      render status: 403
-    else
-      true        
+    def deserve?
+      if !['admin', 'superadmin'].include?(current_user.role) 
+        render status: 403
+      else
+        true        
+      end
     end
-  end
 end

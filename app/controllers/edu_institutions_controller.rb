@@ -1,11 +1,13 @@
 class EduInstitutionsController < ApplicationController
   before_action :set_edu_institution, only: [:show, :update, :destroy]
   before_action :authenticate_user_from_token!
-  before_action :isSuperadmin?
+  before_action :deserve?
 
   # GET /edu_institutions
   def index
     @edu_institutions = EduInstitution.all
+    @edu_institutions = @edu_institutions.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
+    @edu_institutions = @edu_institutions.order("#{params[:field]} #{params[:sort]}") if params[:sort]
     render json: @edu_institutions
   end
 
@@ -58,7 +60,7 @@ class EduInstitutionsController < ApplicationController
       params.require(:edu_institution).permit(:edu_institution, :city)
     end
 
-    def isSuperadmin?
+    def deserve?
       if current_user.role != 'superadmin'
         render status: 403
       else
