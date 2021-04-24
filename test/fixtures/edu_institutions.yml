@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  edu_institution: MyString
+  city: MyString
+
+two:
+  edu_institution: MyString
+  city: MyString
