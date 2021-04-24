@@ -1,11 +1,8 @@
 class UsersController < ApplicationController
   before_action :authenticate_user_from_token!, :except => [:login, :create]
+  before_action :isAdmin?, :except => [:login, :logout, :show]
 
   def create
-    unless ['admin', 'superadmin'].include?(current_user.role) 
-      render status: 403 
-      return
-    end
     user_params = params.require('user').permit(
       :first_name,
       :last_name,
@@ -36,10 +33,6 @@ class UsersController < ApplicationController
   end
 
   def update
-    unless ['admin', 'superadmin'].include?(current_user.role) 
-      render status: 403 
-      return
-    end
     user_params = params.require('user').permit(
       :id,
       :first_name,
@@ -76,16 +69,12 @@ class UsersController < ApplicationController
         status: 200
     else
       render json: {
-        error: "No user" },
+        exception: "No user" },
         status: 200
     end
   end
 
   def index
-    unless ['admin', 'superadmin'].include?(current_user.role) 
-      render status: 403 
-      return
-    end
     users = current_user.role == 'superadmin' ? User.all : User.where("edu_institution_id = '#{current_user[:edu_institution_id]}'")
     render json: {
       users: users },
@@ -93,12 +82,8 @@ class UsersController < ApplicationController
   end
 
   def show
-    unless ['admin', 'superadmin'].include?(current_user.role) 
-      render status: 403 
-      return
-    end
     user = User.find(params[:id])
-    if user.edu_institution_id == current_user.edu_institution_id
+    if user.edu_institution_id == current_user.edu_institution_id || current_user.role == 'superadmin'
       render json: {
         users:  user},
         status: 200
@@ -123,7 +108,16 @@ class UsersController < ApplicationController
   def logout
     User.update(current_user.id, authentication_token: nil)
     render json: {
-      "message": "Logged out"
+      message: "Logged out"
     }, status: 200
+  end
+
+  private
+  def isAdmin?
+    if !['admin', 'superadmin'].include?(current_user.role) 
+      render status: 403
+    else
+      true        
+    end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_23_121336) do
+ActiveRecord::Schema.define(version: 2021_04_24_071100) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 2021_04_23_121336) do
     t.string "city"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["edu_institution"], name: "index_edu_institutions_on_edu_institution", unique: true
   end
 
   create_table "users", force: :cascade do |t|

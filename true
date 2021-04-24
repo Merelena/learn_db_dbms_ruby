@@ -1,0 +1,2 @@
+      invoke  active_record
+      create    db/migrate/20210424071100_edu_institution_unique_name2.rb

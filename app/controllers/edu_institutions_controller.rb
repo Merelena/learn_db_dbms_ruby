@@ -1,10 +1,11 @@
 class EduInstitutionsController < ApplicationController
   before_action :set_edu_institution, only: [:show, :update, :destroy]
+  before_action :authenticate_user_from_token!
+  before_action :isSuperadmin?
 
   # GET /edu_institutions
   def index
     @edu_institutions = EduInstitution.all
-
     render json: @edu_institutions
   end
 
@@ -35,16 +36,33 @@ class EduInstitutionsController < ApplicationController
   # DELETE /edu_institutions/1
   def destroy
     @edu_institution.destroy
+    render json: {
+      message: "Edu institution deleted" },
+      status: 200
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_edu_institution
-      @edu_institution = EduInstitution.find(params[:id])
+      begin
+        @edu_institution = EduInstitution&.find(params[:id])
+      rescue
+        render json: {
+          exception: "No edu institution" },
+          status: 200 unless @edu_institution
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def edu_institution_params
       params.require(:edu_institution).permit(:edu_institution, :city)
+    end
+
+    def isSuperadmin?
+      if current_user.role != 'superadmin'
+        render status: 403
+      else
+        true        
+      end
     end
 end
