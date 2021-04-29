@@ -46,7 +46,12 @@ class EduAidsController < ApplicationController
 
   # DELETE /edu_aids/1
   def destroy
-    @edu_aid.destroy
+    @edu_aid.remove_image!    
+    @edu_aid.remove_document!
+    FileUtils.remove_dir(Rails.root + "public/documents/#{@edu_aid.id}", true)
+    FileUtils.remove_dir(Rails.root + "public/images/#{@edu_aid.id}", true)
+    @edu_aid.save!
+    @edu_aid.destroy!
     render json: {
       message: "Edu aid deleted" },
       status: 200

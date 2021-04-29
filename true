@@ -1,2 +1,2 @@
       invoke  active_record
-      create    db/migrate/20210424071100_edu_institution_unique_name2.rb
+      create    db/migrate/20210424162632_edu_aid_document_null.rb

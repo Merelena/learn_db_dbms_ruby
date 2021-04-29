@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_24_080135) do
+ActiveRecord::Schema.define(version: 2021_04_26_145743) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,7 +20,7 @@ ActiveRecord::Schema.define(version: 2021_04_24_080135) do
     t.string "authors", null: false
     t.string "publisher", null: false
     t.integer "publish_year", null: false
-    t.string "document", null: false
+    t.string "document"
     t.string "description"
     t.integer "number_of_pages"
     t.string "image", default: ""
@@ -36,6 +36,31 @@ ActiveRecord::Schema.define(version: 2021_04_24_080135) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["edu_institution"], name: "index_edu_institutions_on_edu_institution", unique: true
+  end
+
+  create_table "questions", force: :cascade do |t|
+    t.string "question", null: false
+    t.bigint "test_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["test_id"], name: "index_questions_on_test_id"
+  end
+
+  create_table "responses", force: :cascade do |t|
+    t.string "response", null: false
+    t.boolean "correct", null: false
+    t.bigint "question_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["question_id"], name: "index_responses_on_question_id"
+  end
+
+  create_table "tests", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "user_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id"], name: "index_tests_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -64,5 +89,8 @@ ActiveRecord::Schema.define(version: 2021_04_24_080135) do
   end
 
   add_foreign_key "edu_aids", "users"
+  add_foreign_key "questions", "tests"
+  add_foreign_key "responses", "questions"
+  add_foreign_key "tests", "users"
   add_foreign_key "users", "edu_institutions"
 end
