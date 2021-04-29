@@ -86,6 +86,7 @@ test:
 #
 production:
   <<: *default
-  database: learn_db_dbms_production
-  username: learn_db_dbms
-  password: <%= ENV['LEARN_DB_DBMS_DATABASE_PASSWORD'] %>
+  database: d82isj4mv3lgjj
+  username: xycaxpiankyxrk
+  port: 5432
+  password: 21b768176a21e5b1f1376d1dcbce94fe050621d0bc24071f86bef592bab31a2a
