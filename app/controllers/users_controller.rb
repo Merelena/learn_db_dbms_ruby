@@ -13,7 +13,7 @@ class UsersController < ApplicationController
       :password,
       :edu_institution
     )
-    if current_user.role == 'superadmin'
+    if current_user&.role == 'superadmin'
       user_params[:edu_institution_id] = EduInstitution.where("edu_institution = '#{user_params[:edu_institution]}'")&.first&.id
     else
       if user_params[:role] == 'superadmin'
@@ -47,7 +47,7 @@ class UsersController < ApplicationController
       :edu_institution
     )
     user = User.find(user_params[:id])
-    if current_user.role == 'superadmin'
+    if current_user&.role == 'superadmin'
       user_params[:edu_institution_id] = EduInstitution.where("edu_institution = '#{user_params[:edu_institution]}'")&.first&.id
     else
       if user_params[:role] == 'superadmin'
@@ -80,7 +80,7 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    users = current_user.role == 'superadmin' ? User.all : User.where("edu_institution_id = '#{current_user[:edu_institution_id]}'")
+    users = current_user&.role == 'superadmin' ? User.all : User.where("edu_institution_id = '#{current_user[:edu_institution_id]}'")
     users = users.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     users = users.order("#{params[:field]} #{params[:sort]}") if params[:sort]
     render json: {
