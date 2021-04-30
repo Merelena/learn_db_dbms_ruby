@@ -19,13 +19,14 @@ class TestsController < ApplicationController
 
   # GET /tests/1
   def show
-    @result = {}    
+    @result = {}
+    @result[:id] = params[:id]
     @result[:test] = {name: Test.find(params[:id]).name}
     @result[:questions] = []
     questions = Question.where("test_id = #{params[:id]}")
     questions.each do |q|
       responses = Response.where("question_id = #{q.id}").select("id, response, correct")
-      @result[:questions] << {question: q.question, responses: responses}
+      @result[:questions] << {id: q.id, question: q.question, responses: responses}
     end
     render json: @result
   end
@@ -54,16 +55,36 @@ class TestsController < ApplicationController
 
   # PATCH/PUT /tests/1
   def update
-    if @test.update(test_params)
-      render json: @test
+    error = false
+    @test = Test.find(params[:id])
+    error = true unless @test.save
+    question_params.each do |q|
+      @question = Question.find(q[:id])
+      error = true unless @question.update(q.permit(:question))
+      q[:responses].each do |r|
+        @response = Response.find(r[:id])
+        @error = true unless @response.update(r.permit(:question_id, :correct, :response))
+      end
+    end
+    if error
+      render json: {exctention: "Test didn't update"}, status: :unprocessable_entity      
     else
-      render json: @test.errors, status: :unprocessable_entity
+      render json: {message: "Test updated"}, status: 200
     end
   end
 
   # DELETE /tests/1
   def destroy
-    @test.destroy
+    questions = Question.where("test_id = #{@test.id}")
+    questions.each do |q|
+      responses = Response.where("question_id = #{q.id}")
+      responses.each { |r| r.destroy!}
+      q.destroy!
+    end
+    @test.destroy!
+    render json: {
+      message: "Test deleted" },
+      status: 200
   end
 
   private
