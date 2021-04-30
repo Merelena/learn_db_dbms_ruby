@@ -60,10 +60,14 @@ class TestsController < ApplicationController
     error = true unless @test.save
     question_params.each do |q|
       @question = Question.find(q[:id])
-      error = true unless @question.update(q.permit(:question))
-      q[:responses].each do |r|
-        @response = Response.find(r[:id])
-        @error = true unless @response.update(r.permit(:question_id, :correct, :response))
+      if q[:delete]
+        delete_question(q)
+      else
+        error = true unless @question.update(q.permit(:question))
+        q[:responses].each do |r|
+          @response = Response.find(r[:id])
+          @error = true unless @response.update(r.permit(:question_id, :correct, :response))
+        end
       end
     end
     if error
@@ -75,12 +79,6 @@ class TestsController < ApplicationController
 
   # DELETE /tests/1
   def destroy
-    questions = Question.where("test_id = #{@test.id}")
-    questions.each do |q|
-      responses = Response.where("question_id = #{q.id}")
-      responses.each { |r| r.destroy!}
-      q.destroy!
-    end
     @test.destroy!
     render json: {
       message: "Test deleted" },
@@ -88,6 +86,12 @@ class TestsController < ApplicationController
   end
 
   private
+    # For update if question deleted
+    def delete_question(question)
+      @responses = Responses.where("question_id = #{question.id}")
+      
+    end
+
     # Use callbacks to share common setup or constraints between actions.
     def set_test
       @test = Test.find(params[:id])
