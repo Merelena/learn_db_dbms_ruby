@@ -2,6 +2,10 @@ Rails.application.routes.draw do
   resources :tests
   resources :edu_aids
   resources :edu_institutions
+
+  ## Database
+  post '/request', to: 'database#request'
+
   ## User
   post '/users/login', to: 'users#login' 
   get '/users/logout', to: 'users#logout'

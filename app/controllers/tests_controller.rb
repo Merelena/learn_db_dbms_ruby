@@ -5,6 +5,7 @@ class TestsController < ApplicationController
 
   # GET /tests
   def index
+    @page = params[:p] || 1
     @tests = Test.joins("JOIN users ON tests.user_id = users.id").select("
       users.id,
       users.last_name, 
@@ -14,21 +15,21 @@ class TestsController < ApplicationController
       tests.*")
     @tests = @tests.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     @tests = @tests.order("#{params[:field]} #{params[:sort]}") if params[:sort]
-    render json: @tests
+    render json: {pages_count: Test.pgcount, tests: @tests.page(@page)}
   end
 
   # GET /tests/1
   def show
-    @result = {}
-    @result[:id] = params[:id]
-    @result[:test] = {name: Test.find(params[:id]).name}
-    @result[:questions] = []
+    result = {}
+    result[:id] = params[:id]
+    result[:test] = {name: Test.find(params[:id]).name}
+    result[:questions] = []
     questions = Question.where("test_id = #{params[:id]}")
     questions.each do |q|
       responses = Response.where("question_id = #{q.id}").select("id, response, correct")
-      @result[:questions] << {id: q.id, question: q.question, responses: responses}
+      result[:questions] << {id: q.id, question: q.question, responses: responses}
     end
-    render json: @result
+    render json: result
   end
 
   # POST /tests
@@ -38,12 +39,12 @@ class TestsController < ApplicationController
     error = true unless @test.save
     question_params.each do |q|
       q[:test_id] = @test.id
-      @question = Question.new(q.permit(:question, :test_id))
-      error = true unless @question.save
+      question = Question.new(q.permit(:question, :test_id))
+      error = true unless question.save
       q[:responses].each do |r|
-        r[:question_id] = @question.id
-        @response = Response.new(r.permit(:question_id, :correct, :response))
-        @error = true unless @response.save
+        r[:question_id] = question.id
+        response = Response.new(r.permit(:question_id, :correct, :response))
+        error = true unless response.save
       end
     end
     if error
@@ -59,14 +60,14 @@ class TestsController < ApplicationController
     @test = Test.find(params[:id])
     error = true unless @test.save
     question_params.each do |q|
-      @question = Question.find(q[:id])
+      question = Question.find(q[:id])
       if q[:delete]
-        delete_question(q)
+        question.destroy!
       else
         error = true unless @question.update(q.permit(:question))
         q[:responses].each do |r|
-          @response = Response.find(r[:id])
-          @error = true unless @response.update(r.permit(:question_id, :correct, :response))
+          response = Response.find(r[:id])
+          error = true unless @response.update(r.permit(:question_id, :correct, :response))
         end
       end
     end
@@ -86,12 +87,6 @@ class TestsController < ApplicationController
   end
 
   private
-    # For update if question deleted
-    def delete_question(question)
-      @responses = Responses.where("question_id = #{question.id}")
-      
-    end
-
     # Use callbacks to share common setup or constraints between actions.
     def set_test
       @test = Test.find(params[:id])
