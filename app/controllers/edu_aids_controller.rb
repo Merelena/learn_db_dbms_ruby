@@ -7,10 +7,11 @@ class EduAidsController < ApplicationController
 
   # GET /edu_aids
   def index
+    @page = params[:p] || 1
     @edu_aids = EduAid.all
     @edu_aids = @edu_aids.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     @edu_aids = @edu_aids.order("#{params[:field]} #{params[:sort]}") if params[:sort]    
-    render json: @edu_aids
+    render json:  {pages_count: EduAid.pgcount, edu_aids: @edu_aids.page(@page)}
   end
 
   # GET /edu_aids/1
