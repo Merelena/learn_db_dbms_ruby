@@ -10,10 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_26_145743) do
+ActiveRecord::Schema.define(version: 2021_05_23_123336) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "departments", id: false, force: :cascade do |t|
+    t.integer "department_id", null: false
+    t.string "department_name", limit: 50, null: false
+  end
 
   create_table "edu_aids", force: :cascade do |t|
     t.string "name", null: false
@@ -36,6 +41,13 @@ ActiveRecord::Schema.define(version: 2021_04_26_145743) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["edu_institution"], name: "index_edu_institutions_on_edu_institution", unique: true
+  end
+
+  create_table "game_mistakes", force: :cascade do |t|
+    t.string "correct_task", null: false
+    t.string "incorrect_task", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "questions", force: :cascade do |t|

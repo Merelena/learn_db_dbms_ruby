@@ -1,0 +1,2 @@
+class GameMistake < ApplicationRecord
+end

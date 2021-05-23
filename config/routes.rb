@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :game_mistakes
   resources :tests
   resources :edu_aids
   resources :edu_institutions
