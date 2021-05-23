@@ -15,7 +15,11 @@ class TestsController < ApplicationController
       tests.*")
     @tests = @tests.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     @tests = @tests.order("#{params[:field]} #{params[:sort]}") if params[:sort]
-    render json: {pages_count: Test.pgcount, tests: @tests.page(@page)}
+    render json: {
+      type: "success",
+      pages_count: Test.pgcount, 
+      tests: @tests.page(@page)
+    }
   end
 
   # GET /tests/1
@@ -29,7 +33,10 @@ class TestsController < ApplicationController
       responses = Response.where("question_id = #{q.id}").select("id, response, correct")
       result[:questions] << {id: q.id, question: q.question, responses: responses}
     end
-    render json: result
+    render json: {
+      type: "success",
+      response: result
+    }
   end
 
   # POST /tests
@@ -48,9 +55,15 @@ class TestsController < ApplicationController
       end
     end
     if error
-      render json: {exctention: "Test didn't create"}, status: :unprocessable_entity      
+      render json: {
+        type: "error",
+        response: "Test didn't create"
+      }, status: :unprocessable_entity      
     else
-      render json: {message: "Test created"}, status: :created
+      render json: {
+        type: "success",
+        response: "Test created"
+        }, status: :created
     end
   end
 
@@ -72,9 +85,15 @@ class TestsController < ApplicationController
       end
     end
     if error
-      render json: {exctention: "Test didn't update"}, status: :unprocessable_entity      
+      render json: {
+        type: "error",
+        response: "Test didn't update"
+      }, status: :unprocessable_entity      
     else
-      render json: {message: "Test updated"}, status: 200
+      render json: {
+        type: "success",
+        message: "Test updated"
+      }, status: 200
     end
   end
 
@@ -82,8 +101,9 @@ class TestsController < ApplicationController
   def destroy
     @test.destroy!
     render json: {
-      message: "Test deleted" },
-      status: 200
+      type: "success",
+      response: "Test deleted" 
+    }, status: 200
   end
 
   private
@@ -105,7 +125,7 @@ class TestsController < ApplicationController
 
     def deserve?
       if !['lector', 'admin', 'superadmin'].include?(current_user.role) 
-        render status: 403
+        render json: { type: "error" }, status: 403
       else
         true        
       end

@@ -8,30 +8,48 @@ class EduInstitutionsController < ApplicationController
     @edu_institutions = EduInstitution.all
     @edu_institutions = @edu_institutions.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     @edu_institutions = @edu_institutions.order("#{params[:field]} #{params[:sort]}") if params[:sort]
-    render json: @edu_institutions
+    render json: {
+      type: "success",
+      response: @edu_institutions
+    }
   end
 
   # GET /edu_institutions/1
   def show
-    render json: @edu_institution
+    render json: {
+      type: "success",
+      response: @edu_institution
+    }
   end
 
   # POST /edu_institutions
   def create
     @edu_institution = EduInstitution.new(edu_institution_params)
     if @edu_institution.save
-      render json: @edu_institution, status: :created
+      render json: {
+        type: "success",
+        response: @edu_institution
+      }, status: :created
     else
-      render json: @edu_institution.errors, status: :unprocessable_entity
+      render json: {
+        type: "error",
+        response: @edu_institution.errors
+      }, status: :unprocessable_entity
     end
   end
 
   # PATCH/PUT /edu_institutions/1
   def update
     if @edu_institution.update(edu_institution_params)
-      render json: @edu_institution
+      render json: {
+        type: "success",
+        response: @edu_institution
+      }
     else
-      render json: @edu_institution.errors, status: :unprocessable_entity
+      render json: {
+        type: "error",
+        response: @edu_institution.errors
+      }, status: :unprocessable_entity
     end
   end
 
@@ -39,8 +57,9 @@ class EduInstitutionsController < ApplicationController
   def destroy
     @edu_institution.destroy
     render json: {
-      message: "Edu institution deleted" },
-      status: 200
+      type: "success",
+      response: "Edu institution deleted" 
+    }, status: 200
   end
 
   private
@@ -50,8 +69,9 @@ class EduInstitutionsController < ApplicationController
         @edu_institution = EduInstitution&.find(params[:id])
       rescue
         render json: {
-          exception: "No edu institution" },
-          status: 200 unless @edu_institution
+          type: "error",
+          response: "No edu institution" 
+        }, status: 200 unless @edu_institution
       end
     end
 
@@ -62,7 +82,7 @@ class EduInstitutionsController < ApplicationController
 
     def deserve?
       if current_user.role != 'superadmin'
-        render status: 403
+        render json: { type: "error" }, status: 403
       else
         true        
       end

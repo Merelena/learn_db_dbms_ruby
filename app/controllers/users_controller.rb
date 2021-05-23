@@ -17,7 +17,7 @@ class UsersController < ApplicationController
       user_params[:edu_institution_id] = EduInstitution.where("edu_institution = '#{user_params[:edu_institution]}'")&.first&.id
     else
       if user_params[:role] == 'superadmin'
-        render status: 403
+        render json: { type: "error" }, status: 403
         return
       end
       user_params[:edu_institution_id] = current_user.edu_institution_id
@@ -25,12 +25,14 @@ class UsersController < ApplicationController
     user = User.new user_params.except(:edu_institution)
     if user[:edu_institution_id] && user.save!
           render json: {
-            message: "User created"},
-            status: :created
+            type: "success",
+            response: "User created"
+          }, status: :created
     else
           render json: {
-            message: "User creating failed"}, 
-            status: :unprocessable_entity
+            type: "error",
+            response: "User creating failed"
+          }, status: :unprocessable_entity
     end
   end
 
@@ -43,23 +45,29 @@ class UsersController < ApplicationController
       :middle_name,
       :role,
       :email,
-      :password,
+      :encrypred_password,
       :edu_institution
     )
-    user = User.find(user_params[:id])
+    user = User.find(params[:id])
     if current_user&.role == 'superadmin'
       user_params[:edu_institution_id] = EduInstitution.where("edu_institution = '#{user_params[:edu_institution]}'")&.first&.id
     else
       if user_params[:role] == 'superadmin'
-        render status: 403
+        render json: { type: "error" }, status: 403
         return
       end
       user_params[:edu_institution_id] = current_user.edu_institution_id
     end
     if user.update(user_params.except("edu_institution") )
-      render json: user
+      render json: {
+        type: "success",
+        response: user
+      }
     else
-      render json: user.errors, status: :unprocessable_entity
+      render json: {
+        type: "error",
+        response: user.errors
+      }, status: :unprocessable_entity
     end
   end
 
@@ -69,12 +77,14 @@ class UsersController < ApplicationController
     # Only superadmin can delete users from all edu instituts
     if (user.edu_institution_d == current_user.edu_institutiontion_id || current_user.role == 'superadmin') && user.delete
       render json: {
-        message: "User deleted" },
-        status: 200
+        type: "success",
+        response: "User deleted" 
+      }, status: 200
     else
       render json: {
-        exception: "No user" },
-        status: 200
+        type: "error",
+        response: "No user" 
+      }, status: 200
     end
   end
 
@@ -84,8 +94,9 @@ class UsersController < ApplicationController
     users = users.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     users = users.order("#{params[:field]} #{params[:sort]}") if params[:sort]
     render json: {
-      users: users },
-      status: 200
+      type: "success",
+      response: users
+    }, status: 200
   end
 
   # GET /users/:id
@@ -93,21 +104,25 @@ class UsersController < ApplicationController
     user = User.find(params[:id])
     if user.edu_institution_id == current_user.edu_institution_id || current_user.role == 'superadmin'
       render json: {
-        users:  user},
-        status: 200
+        type: "success",
+        response:  user
+      }, status: 200
     else
-      render status: 403
+      render json: { type: "error" }, status: 403
     end
   end
 
   # POST /users/login
   def login
-    user = User.where("email = '#{params[:email]}'").first
-    if user&.valid_password?(params[:password])
+    user = User.where("email = '#{params[:email].split(/\s+/).first}'").first
+    if user&.valid_password?(params[:password].split(/\s+/).first)
       user.save!
       render json: {
-        "user": user,
-        "token": user.authentication_token
+        "type": "success",
+        "response": {
+          "user": user,
+          "token": user.authentication_token
+        }
       }, status: :created
     else
       head(:unauthorized)
@@ -118,14 +133,15 @@ class UsersController < ApplicationController
   def logout
     User.update(current_user.id, authentication_token: nil)
     render json: {
-      message: "Logged out"
+      type: "success",
+      response: "Logged out"
     }, status: 200
   end
 
   private
     def deserve?
-      if !['admin', 'superadmin'].include?(current_user.role) 
-        render status: 403
+      if !['admin', 'superadmin'].include?(current_user&.role) 
+        render json: { type: "error" }, status: 403
       else
         true        
       end

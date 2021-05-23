@@ -11,37 +11,57 @@ class EduAidsController < ApplicationController
     @edu_aids = EduAid.all
     @edu_aids = @edu_aids.where("lower(#{params[:field]}) like ?", "%#{params[:search].downcase}%") if params[:search]
     @edu_aids = @edu_aids.order("#{params[:field]} #{params[:sort]}") if params[:sort]    
-    render json:  {pages_count: EduAid.pgcount, edu_aids: @edu_aids.page(@page)}
+    render json:  {
+      type: "success",
+      pages_count: EduAid.pgcount, 
+      message: @edu_aids.page(@page)
+    }
   end
 
   # GET /edu_aids/1
   def show
-    render json: @edu_aid
+    render json: {
+      type: "success",
+      message: @edu_aid
+    }
   end
 
   # POST /edu_aids
   def create    
     unless edu_aid_params[:document]
       render json: {
-        extention: "Document file is mandatory"
+        type: "error",
+        message: "Document file is mandatory"
         }, status: :unprocessable_entity
       return
     end
     @edu_aid = EduAid.new(edu_aid_params)
 
     if @edu_aid.save
-      render json: @edu_aid, status: :created, location: @edu_aid
+      render json: {
+        type: "success",
+        message: @edu_aid
+        }, status: :created, location: @edu_aid
     else
-      render json: @edu_aid.errors, status: :unprocessable_entity
+      render json:  {
+        type: "error",
+        message: @edu_aid.errors
+      }, status: :unprocessable_entity
     end
   end
 
   # PATCH/PUT /edu_aids/1
   def update
     if @edu_aid.update(edu_aid_params)
-      render json: @edu_aid
+      render json: {
+        type: "success",
+        message: @edu_aid
+      }
     else
-      render json: @edu_aid.errors, status: :unprocessable_entity
+      render json: {
+        type: "error",
+        message: @edu_aid.errors 
+      }, status: :unprocessable_entity
     end
   end
 
@@ -54,8 +74,8 @@ class EduAidsController < ApplicationController
     @edu_aid.save!
     @edu_aid.destroy!
     render json: {
-      message: "Edu aid deleted" },
-      status: 200
+      response: "Edu aid deleted"
+    }, status: 200
   end
 
   private
@@ -65,8 +85,8 @@ class EduAidsController < ApplicationController
         @edu_aid = EduAid.find(params[:id])
       rescue
         render json: {
-          exception: "No edu aid" },
-          status: 200 unless @edu_aid
+          response: "No edu aid"
+        }, status: 200 unless @edu_aid
       end
     end
 
@@ -89,7 +109,7 @@ class EduAidsController < ApplicationController
 
     def deserve?
       if !['lector', 'admin', 'superadmin'].include?(current_user.role) 
-        render status: 403
+        render json: { type: "error" }, status: 403
       else
         true        
       end

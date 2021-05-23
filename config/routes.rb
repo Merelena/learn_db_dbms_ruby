@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   resources :edu_institutions
 
   ## Database
-  post '/request', to: 'database#request'
+  post '/request_block', to: 'database#request_block'
 
   ## User
   post '/users/login', to: 'users#login' 
