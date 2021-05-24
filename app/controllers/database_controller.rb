@@ -10,14 +10,9 @@ class DatabaseController < ApplicationController
     @requests = requests
     @responses = {}
     @timestamp = "t#{(Time.now.to_f * 1000).to_i}_"
-    @sql = ActiveRecord::Base.establish_connection({
-      :adapter  => "postgresql",
-      :host     => "localhost",
-      :username => "postgres",
-      :password => "0248",
-      :database => "user"}).connection
+    @sql = ActiveRecord::Base.connection()
     @sql.execute(OPEN_TRANSACTION)
-    @requests.each { |request| break if make(request).include?("No rights") }
+    @requests.each { |request| make(request) }
     @sql.execute(CLOSE_TRANSACTION)
     render json: { type: "success", response: @responses}, status: 200      
   end
@@ -32,7 +27,10 @@ class DatabaseController < ApplicationController
 
   def make(request)
     result_request = "#{parse(request)}"
-    #return unless result_request
+    if result_request =~ /[\s\(\)\.'"]users|edu_aids|edu_institutions|tests|questions|responses|game_mistakes[\s;\(\)\.'"]/i
+      @responses[request.gsub(@timestamp, '')] = "ОШИБКА: нет прав"
+      return 
+    end
     begin
       response = @sql.execute(result_request) 
       response = 'OK' if response.nil? || response.to_a.empty?
