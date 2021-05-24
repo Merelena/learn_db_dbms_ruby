@@ -10,7 +10,12 @@ class DatabaseController < ApplicationController
     @requests = requests
     @responses = {}
     @timestamp = "t#{(Time.now.to_f * 1000).to_i}_"
-    @sql = ActiveRecord::Base.connection();
+    @sql = ActiveRecord::Base.establish_connection({
+      :adapter  => "postgresql",
+      :host     => "localhost",
+      :username => "postgres",
+      :password => "0248",
+      :database => "user"}).connection
     @sql.execute(OPEN_TRANSACTION)
     @requests.each { |request| break if make(request).include?("No rights") }
     @sql.execute(CLOSE_TRANSACTION)
