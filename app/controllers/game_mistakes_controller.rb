@@ -62,7 +62,7 @@ class GameMistakesController < ApplicationController
 
   private
     def set_game_mistake
-      @game_mistake = params[:id] == "generate" ? GameMistake.all.sample(1) : GameMistake.find(params[:id])
+      @game_mistake = params[:id] == "generate" ? GameMistake.all.sample(4) : GameMistake.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.
