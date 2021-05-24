@@ -1,6 +1,6 @@
 class GameMistakesController < ApplicationController
   before_action :set_game_mistake, only: [:show, :update, :destroy]
-  before_action :authenticate_user_from_token!, except: [:show]
+  before_action :authenticate_user_from_token!, except: [:show, :index]
   before_action :deserve?, except: [:index, :show]
 
   # GET /game_mistakes

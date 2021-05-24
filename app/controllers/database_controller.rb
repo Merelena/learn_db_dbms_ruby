@@ -3,17 +3,17 @@ require 'time'
 
 class DatabaseController < ApplicationController
   before_action :authenticate_user_from_token!, except: [:request_block]
-  BEGIN_REQUESTS = 'BEGIN; SAVEPOINT savepoint;'
-  END_REQUEST =  'ROLLBACK TO SAVEPOINT savepoint;'
-
+  OPEN_TRANSACTION = ' BEGIN; SAVEPOINT savepoint;'
+  CLOSE_TRANSACTION =  'ROLLBACK TO SAVEPOINT savepoint;'
+  ### Добавь проверку итоговых запросов на наличие запрещенных таблиц!!!
   def request_block
     @requests = requests
     @responses = {}
     @timestamp = "t#{(Time.now.to_f * 1000).to_i}_"
     @sql = ActiveRecord::Base.connection();
-    @sql.execute(BEGIN_REQUESTS)
+    @sql.execute(OPEN_TRANSACTION)
     @requests.each { |request| break if make(request).include?("No rights") }
-    @sql.execute(END_REQUEST)
+    @sql.execute(CLOSE_TRANSACTION)
     render json: { type: "success", response: @responses}, status: 200      
   end
 
