@@ -6,6 +6,7 @@ gem 'devise'
 gem 'simple_token_authentication'
 gem 'carrierwave'
 gem 'sequel'
+gem 'rack-cors', :require => 'rack/cors'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem 'rails', '~> 6.1.3', '>= 6.1.3.1'
 # Use postgresql as the database for Active Record
