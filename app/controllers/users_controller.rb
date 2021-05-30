@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :authenticate_user_from_token!, :except => [:login, :create]
+  before_action :authenticate_user_from_token!, :except => [:login]
   before_action :deserve?, :except => [:login, :logout, :show]
 
 
