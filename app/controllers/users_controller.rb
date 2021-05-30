@@ -31,7 +31,7 @@ class UsersController < ApplicationController
     else
           render json: {
             type: "error",
-            response: "User creating failed"
+            response: "User creating failed. Maybe wrong edu insitution?"
           }, status: :unprocessable_entity
     end
   end

@@ -77,10 +77,10 @@ class TestsController < ApplicationController
       if q[:delete]
         question.destroy!
       else
-        error = true unless @question.update(q.permit(:question))
+        error = true unless question.update(q.permit(:question))
         q[:responses].each do |r|
           response = Response.find(r[:id])
-          error = true unless @response.update(r.permit(:question_id, :correct, :response))
+          error = true unless response.update(r.permit(:question_id, :correct, :response))
         end
       end
     end
