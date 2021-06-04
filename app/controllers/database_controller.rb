@@ -46,7 +46,7 @@ class DatabaseController < ApplicationController
   end
 
   def parse(request)
-    result = request.split(/[\s\.\(\)\[\]]/).select { |r| r =~ /\w*[a-z]+\w*/ && r.first != "\\"}
+    result = request.split(/[\s\.\(\)\[\]]/).select { |r| r =~ /\w*[a-z]+\w*/ && !["'", '"', "`"].include?(r.last) && !["'", '"', "`"].include?(r.first) && r.first != "\\"}
     result.each do |word|
       request.gsub!(word, @timestamp + word)
     end
