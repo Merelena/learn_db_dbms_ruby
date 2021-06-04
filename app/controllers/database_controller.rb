@@ -41,7 +41,7 @@ class DatabaseController < ApplicationController
     response.to_a.each do |r|
       result_response << r.transform_keys { |k| k.gsub(@timestamp, '')}
     end unless response.class == String
-
+    result_response = 'ОШИБКА' unless result_response
     @responses[request.gsub(@timestamp, '')] = result_response.empty? ? response : result_response
   end
 
