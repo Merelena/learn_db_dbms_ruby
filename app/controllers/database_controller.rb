@@ -46,7 +46,7 @@ class DatabaseController < ApplicationController
   end
 
   def parse(request)
-    quotes = ["'", '"', "`"]
+    quotes = ["'", '"', "`", '\"', '\'']
     result = request.split(/[\s\.\(\)\[\]]/).select { |r| r =~ /\w*[a-z]+\w*/ && !quotes.include?(r.last) && !quotes.include?(r.first) && r.first != "\\"}
     result.each do |word|
       request.gsub!(word, @timestamp + word)
