@@ -75,7 +75,7 @@ class UsersController < ApplicationController
   def delete
     user = User.find(params[:id])
     # Only superadmin can delete users from all edu instituts
-    if (user.edu_institution_id == current_user.edu_institutiontion_id || current_user.role == 'superadmin') && user.delete
+    if (user.edu_institution_id == current_user.edu_institution_id || current_user.role == 'superadmin') && user.delete
       render json: {
         type: "success",
         response: "User deleted" 
